@@ -216,6 +216,16 @@ for (f in af1){
 }
 
 
+## ===========================
+## make my metadata for encsr 
+## ===========================
+tissue <- gsub('tissue.*', '', gsub('.*musculus ', '', gsub('.*sapiens ','', tb.encsr[,4])))
+tb.encsr$tissue = tissue
+ct <- gsub('.csv', '', sub('.*:','', names(metalist)))
+table(tissue)
+table(ct)
+saveRDS(tb.encsr, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/encsr_metadata/table_encsr.rds')
+
 
 ## =========
 ##### plot
@@ -231,6 +241,8 @@ pdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/'
 tissue <- gsub('tissue.*', '', gsub('.*musculus ', '', gsub('.*sapiens ','', tb.encsr[,4])))
 tb.encsr$tissue = tissue
 ct <- gsub('.csv', '', sub('.*:','', names(metalist)))
+names(ct) <- names(metalist)
+str(ct)
 table(tissue)
 table(ct)
 t = ct[1]
@@ -291,4 +303,66 @@ ggplot(data = pd) +
   ylab('Number of cells in metacells (log10)') +
   xlab('Celltype')
   dev.off()
+
+## plot gene-peak correlation in single-cell as boxplot, in metacells as boxplot
+pdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/compare_genepeakcorrelation_metacell_sc/'
+str(ct)
+rdir1 <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/singlecell_correlation/'
+
+cor.sc <- lapply(af1, function(f){
+  print(f)
+  tmp <- readRDS(paste0(rdir1, sub('.csv', '.rds', f)))
+  tmp <- unlist(tmp)
+  if (length(tmp) > 0){
+    if (length(tmp) > 1e2){
+      tmp <- sample(tmp, round(length(tmp)*0.1), replace = FALSE)
+    }
+    tmp2 <- data.frame(celltype = ct[f], cor = tmp, type = 'singlecell')
+  }
+})
+cor.sc <- do.call(rbind, cor.sc)
+str(cor.sc)
+
+
+rdir2 <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_correlation/'
+cor.meta <- lapply(af1, function(f){
+  print(f)
+  tmp <- readRDS(paste0(rdir2, sub('.csv', '_metacell.rds', f)))
+  tmp <- unlist(tmp)
+  if (length(tmp) > 0){
+    if (length(tmp) > 1e2){
+      tmp <- sample(tmp, round(length(tmp)*0.1), replace = FALSE)
+    }
+    tmp2 <- data.frame(celltype = ct[f], cor = tmp, type = 'metacell')
+  }
+})
+cor.meta <- do.call(rbind, cor.meta)
+str(cor.meta)
+
+pd.cor <- rbind(cor.sc, cor.meta)
+saveRDS(pd.cor, paste0(pdir, 'peakgenepair_correlation_metacell_sc_plotdata.rds'))
+
+
+# Create the side-by-side boxplot
+pdf(
+  paste0(pdir, 'peakgenepair_correlation_metacell_sc.pdf'),
+  width = 6,
+  height = 3
+)
+ggplot(pd.cor, aes(x = factor(celltype), y = cor, fill = factor(type))) +
+  geom_boxplot(position = position_dodge(0.8), outlier.shape = NA, alpha = 0.5) +
+  labs(
+    x = "Cell type",
+    y = "Peak-gene Correlation",
+    fill = "type"
+  ) +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    hjust = 1,
+    vjust = 1
+  ))  +
+  geom_hline(yintercept = 0, color = 'red', type = 'dashed')
+dev.off()
+
+
 
