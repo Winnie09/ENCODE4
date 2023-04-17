@@ -23,7 +23,6 @@ af3 <- list.files('/home/whou10/data/zji/encode/data/multiome/mat/rds/rna/')
 ## ====================================
 f = af1[1]
 f
-for (f in af1){
 metalist <- lapply(af1, function(f){
   print(f)
   meta = read.csv(paste0('/home/whou10/data/zji/encode/data/multiome/seacells/csv/', f))
@@ -31,8 +30,9 @@ metalist <- lapply(af1, function(f){
   names(v) <- meta[,1]
   v
 })  
+names(metalist) <- af1
 saveRDS(metalist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/metacell_list.rds')
-  
+
 
 ## =======
 ## rna
@@ -212,7 +212,73 @@ saveRDS(corlist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/singlec
 library(ggplot2)
 source('/home/whou10/scratch16/whou10/resource/ggplot_theme.R')
 theme_set(.new_theme)
+pdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/'
+
+# number of cells in each metacell
+# all histogram
+# stragify by tissue types (paste #of total cells)
+tissue <- gsub('tissue.*', '', gsub('.*musculus ', '', gsub('.*sapiens ','', tb.encsr[,4])))
+tb.encsr$tissue = tissue
+ct <- gsub('.csv', '', sub('.*:','', names(metalist)))
+table(tissue)
+table(ct)
+t = ct[1]
+id <- which(ct == t)
+i = id[1]
+pd <- lapply(1:length(metalist), function(i){
+  tmp <- table(metalist[[i]])
+  
+  tmpdf <- data.frame(species = species[i], 
+             tissue = tb.encsr[which(tb.encsr[,1] %in% sub(':.*','',names(metalist)[i]) ), 5],
+             celltype = ct[i],
+             numCell = as.vector(tmp),
+             stringsAsFactors = FALSE)
+})
+pd <- do.call(rbind, pd)
+str(pd)
+saveRDS(pd, paste0(pdir, 'plotdata.rds'))
 
 
-str(tb)
+library(RColorBrewer)
+
+my_palette <- colorRampPalette(brewer.pal(n = 8, name =  "Dark2"))(20)
+
+pdf(
+  paste0(pdir, 'distribution_of_numCell_in_metacell.pdf'),
+  width = 12,
+  height = 4.5
+)
+
+ggplot(data = pd) +
+  geom_boxplot(aes(x = celltype, y = numCell), 
+               outlier.shape = NA) +
+  geom_jitter(
+    aes(
+      x = celltype,
+      y = numCell,
+      color = tissue,
+      shape = species
+    ),
+    size = 0.5,
+    stroke = 0,
+    alpha = 0.5,
+    width =0.2
+  ) +
+  scale_y_log10() +
+  theme(axis.text.x = element_text(
+    angle = 45,
+    hjust = 1,
+    vjust = 1
+  )) +
+  scale_alpha(guide = "none") +
+  scale_size(guide = "none") +
+  guides(
+    size = guide_legend(override.aes = list(size = 6)),
+    alpha = guide_legend(override.aes = list(alpha = 1))
+  ) + 
+  scale_color_manual(values = my_palette) +
+  ylab('Number of cells in metacells (log10)') +
+  xlab('Celltype')
+  dev.off()
+
 
