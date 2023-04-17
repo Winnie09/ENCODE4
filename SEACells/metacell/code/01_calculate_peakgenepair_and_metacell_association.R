@@ -149,8 +149,9 @@ saveRDS(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/pe
 
 
 ## calculate peak-gene pair correlation: metacell
+rdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_correlation/'
 f = af1[2]
-corlist <- list()
+
 for (f in af1){
   print(f)
   if (species[f] == 'mm10'){
@@ -164,21 +165,25 @@ for (f in af1){
   rna <- readRDS(paste0(rdir.rna, sub('.csv','_metacell.rds',f)))
   str(atac)
   str(rna)
-  if (sub(":.*",'', g) %in% names(peakgenepair)){
-    pk = peakgenepair[[sub(":.*",'', g)]]
-    if (pk %in% rownames(atac)){
-      atac.tmp =   t(atac[pk, ,drop=F])
-      corlist[[g]] <- as.vector(corfunc(atac.tmp, t(rna[g,,drop=F])))
+  corlist <- list()
+  for (g in rownames(rna)){
+    if (sub(":.*", '', g) %in% names(peakgenepair)) {
+      pk = peakgenepair[[sub(":.*", '', g)]]
+      if (sum(pk %in% rownames(atac)) > 0) {
+        atac.tmp =   t(atac[pk[pk %in% rownames(atac)], , drop = F])
+        corlist[[g]] <-
+          as.vector(corfunc(atac.tmp, t(rna[g, , drop = F])))
+      }
     }
   }
+  saveRDS(corlist, paste0(rdir, sub('.csv', '_metacell.rds', f)))    
 }
 str(corlist;1:3)  
-saveRDS(corlist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_correlation/corlist.rds')
+
 
 ## calculate single-cell level correlation
-
-
-corlist <- list()
+rdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/singlecell_correlation/'
+f = af1[1]
 for (f in af1){
   print(f)
   if (species[f] == 'mm10'){
@@ -188,27 +193,33 @@ for (f in af1){
   }
   
   ## process sc data
+  ## scRNA-seq log2CPM and gene QC
   rna = readRDS(paste0('/home/whou10/data/zji/encode/data/multiome/mat/rds/rna/', sub('.csv','.rds', f)))
   mat <- log2CPM_from_10x_count(rna)
   rna <- mat[rowMeans(mat > 0) > 0.1, ]
   
+  ## scATAC-seq binarized
   atac = readRDS(paste0('/home/whou10/data/zji/encode/data/multiome/mat/rds/atac/', sub('.csv','.rds', f)))
   atac <- (atac > 0) + 0
   
-  if (sub(":.*",'', g) %in% names(peakgenepair)){
-    pk = peakgenepair[[sub(":.*",'', g)]]
-    if (pk %in% rownames(atac)){
-      atac.tmp =   t(atac[pk, ,drop=F])
-      corlist[[g]] <- as.vector(corfunc(atac.tmp, t(rna[g,,drop=F])))
-    }
+  corlist <- list()
+  for (g in rownames(rna)){
+    if (sub(":.*",'', g) %in% names(peakgenepair)){
+      pk = peakgenepair[[sub(":.*",'', g)]]
+      if (sum(pk %in% rownames(atac)) > 0){
+        atac.tmp =   t(atac[pk[pk %in% rownames(atac)], ,drop=F])
+        corlist[[g]] <- as.vector(corfunc(atac.tmp, t(rna[g,,drop=F])))
+      }
+    }  
   }
+  saveRDS(corlist, paste0(rdir, sub('.csv', '.rds', f)))
 }
-str(corlist;1:3)  
-saveRDS(corlist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/singlecell_correlation/corlist.rds')
 
 
 
+## =========
 ##### plot
+## =========
 library(ggplot2)
 source('/home/whou10/scratch16/whou10/resource/ggplot_theme.R')
 theme_set(.new_theme)
@@ -245,8 +256,8 @@ my_palette <- colorRampPalette(brewer.pal(n = 8, name =  "Dark2"))(20)
 
 pdf(
   paste0(pdir, 'distribution_of_numCell_in_metacell.pdf'),
-  width = 12,
-  height = 4.5
+  width = 9,
+  height = 3.5
 )
 
 ggplot(data = pd) +
@@ -280,5 +291,4 @@ ggplot(data = pd) +
   ylab('Number of cells in metacells (log10)') +
   xlab('Celltype')
   dev.off()
-
 
