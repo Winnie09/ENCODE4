@@ -11,12 +11,28 @@ source('/home/whou10/scratch16/whou10/resource/myfunc/01_function.R')
 
 ## Seacells metacell
 af1 <- list.files('/home/whou10/data/zji/encode/data/multiome/seacells/csv/')
-  
+
 ## ATAC count (peak by cell)
 af2 <- list.files('/home/whou10/data/zji/encode/data/multiome/mat/rds/atac/')
 
 ## RNA count (gene by cell)
 af3 <- list.files('/home/whou10/data/zji/encode/data/multiome/mat/rds/rna/')
+
+## ====================================
+## save metacell information as a list
+## ====================================
+f = af1[1]
+f
+for (f in af1){
+metalist <- lapply(af1, function(f){
+  print(f)
+  meta = read.csv(paste0('/home/whou10/data/zji/encode/data/multiome/seacells/csv/', f))
+  v <- meta[,2]
+  names(v) <- meta[,1]
+  v
+})  
+saveRDS(metalist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/metacell_list.rds')
+  
 
 ## =======
 ## rna
@@ -99,7 +115,7 @@ names(gene) <- sub('".*','',sub('.*gene_name "','',gtf[,9]))
 pro <- promoters(gene,upstream=500,downstream=500)
 peaks <- GRanges(seqnames=sapply(rownames(atac), function(i) sub(':.*','',i)),
                  IRanges(start=as.numeric(sapply(rownames(atac), function(i) sub('_.*','',sub('.*:','',i)))),
-                 end=as.numeric(sapply(rownames(atac), function(i) sub('.*_','',sub('.*:','',i))))),
+                         end=as.numeric(sapply(rownames(atac), function(i) sub('.*_','',sub('.*:','',i))))),
                  strand='*')
 
 o <- as.matrix(findOverlaps(pro, peaks))
@@ -139,8 +155,8 @@ for (f in af1){
   print(f)
   if (species[f] == 'mm10'){
     peakgenepair <- readRDS('/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/mouse_grcm38.rds')
-  str(peakgenepair[1:3])
-    } else {
+    str(peakgenepair[1:3])
+  } else {
     peakgenepair <- readRDS('/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/human_grch38.rds')
     str(peakgenepair[1:3])
   }
@@ -175,10 +191,10 @@ for (f in af1){
   rna = readRDS(paste0('/home/whou10/data/zji/encode/data/multiome/mat/rds/rna/', sub('.csv','.rds', f)))
   mat <- log2CPM_from_10x_count(rna)
   rna <- mat[rowMeans(mat > 0) > 0.1, ]
-
+  
   atac = readRDS(paste0('/home/whou10/data/zji/encode/data/multiome/mat/rds/atac/', sub('.csv','.rds', f)))
   atac <- (atac > 0) + 0
-
+  
   if (sub(":.*",'', g) %in% names(peakgenepair)){
     pk = peakgenepair[[sub(":.*",'', g)]]
     if (pk %in% rownames(atac)){
@@ -199,3 +215,4 @@ theme_set(.new_theme)
 
 
 str(tb)
+
