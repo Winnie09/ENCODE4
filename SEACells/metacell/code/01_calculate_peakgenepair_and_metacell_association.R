@@ -101,8 +101,9 @@ for (f in af1){
   # saveRDS(mat2, paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
 }
 
-
+## ===============
 ## gene peak pairs
+## ===============
 f = af1[1]
 atac <- readRDS(paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
 rna <- readRDS(paste0(rdir.rna, sub('.csv','_metacell.rds',f)))
@@ -147,8 +148,9 @@ length(peakgenepair)
 saveRDS(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/human_grch38.rds')
 
 
-
+## ==============================================
 ## calculate peak-gene pair correlation: metacell
+## ==============================================
 rdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_correlation/'
 f = af1[2]
 
@@ -181,7 +183,9 @@ for (f in af1){
 str(corlist;1:3)  
 
 
-## calculate single-cell level correlation
+## ==================================================
+## calculate peak-gene pair correlation: single-cell
+## ==================================================
 rdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/singlecell_correlation/'
 f = af1[1]
 for (f in af1){
@@ -364,5 +368,39 @@ ggplot(pd.cor, aes(x = factor(celltype), y = cor, fill = factor(type))) +
   geom_hline(yintercept = 0, color = 'red', type = 'dashed')
 dev.off()
 
+
+
+
+
+
+## ========================
+## investiage one celltype
+## ========================
+rdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_correlation/'
+f = af1[2]
+print(f)
+if (species[f] == 'mm10'){
+  peakgenepair <- readRDS('/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/mouse_grcm38.rds')
+  str(peakgenepair[1:3])
+} else {
+  peakgenepair <- readRDS('/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/human_grch38.rds')
+  str(peakgenepair[1:3])
+}
+atac <- readRDS(paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
+rna <- readRDS(paste0(rdir.rna, sub('.csv','_metacell.rds',f)))
+str(atac)
+str(rna)
+corlist <- list()
+g = 'Tek' #'Flt1' #'Cdh5' # 'Kdr' ## Note: cannot find these gene's peaks, endothelial cells
+i =  which(sub(':.*', '', rownames(rna)) == g)
+g = rownames(rna)[i]
+if (sub(":.*", '', g) %in% names(peakgenepair)) {
+  pk = peakgenepair[[sub(":.*", '', g)]]
+  if (sum(pk %in% rownames(atac)) > 0) {
+    atac.tmp =   t(atac[pk[pk %in% rownames(atac)], , drop = F])
+    corlist[[g]] <-
+      as.vector(corfunc(atac.tmp, t(rna[g, , drop = F])))
+  }
+}
 
 
