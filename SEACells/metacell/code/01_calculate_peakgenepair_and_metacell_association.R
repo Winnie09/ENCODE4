@@ -5,8 +5,8 @@ rm(list=ls())
 ## result directory
 rdir.atac <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/atac/processed/'  
 rdir.rna <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/rna/processed/'  
-dir.create(rdir.atac)
-dir.create(rdir.rna)
+dir.create(rdir.atac, recursive = T)
+dir.create(rdir.rna, recursive = T)
 source('/home/whou10/scratch16/whou10/resource/myfunc/01_function.R')
 
 ## Seacells metacell
@@ -31,7 +31,7 @@ metalist <- lapply(af1, function(f){
   v
 })  
 names(metalist) <- af1
-saveRDS(metalist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/metacell_list.rds')
+saveRDS_auto_create_dir(metalist, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/metacell_list/metacell_list.rds')
 
 
 ## =======
@@ -46,7 +46,7 @@ for (f in af1){
   rs <- t(rowsum(t(rna), meta[match(colnames(rna), meta[,1]),2]))
   mat <- log2CPM_from_10x_count(rs)
   mat2 <- mat[rowMeans(mat > 0) > 0.1, ]
-  saveRDS(mat2, paste0(rdir.rna, sub('.csv','_metacell.rds',f)))
+  saveRDS_auto_create_dir(mat2, paste0(rdir.rna, sub('.csv','_metacell.rds',f)))
 }
 
 ## =========
@@ -89,7 +89,7 @@ for (f in af1){
   atac = readRDS(paste0('/home/whou10/data/zji/encode/data/multiome/mat/rds/atac/', sub('.csv','.rds', f)))
   rs <- t(rowsum(t(atac), meta[match(colnames(atac), meta[,1]),2]))
   rs2 <- (rs > 0) + 0
-  saveRDS(rs2, paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
+  saveRDS_auto_create_dir(rs2, paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
   # ## normalize
   # encsr.f = tb.encsr[which(tb.encsr[,1] == sub(':.*', '', f)), 3] ## multiome encsr to atac encsr
   # lib <- libsize[encff[encsr.f]][[1]]
@@ -98,7 +98,7 @@ for (f in af1){
   # 
   # ## filtering
   # mat2 <- mat[rowMeans(mat > 0) > 0.1, ]
-  # saveRDS(mat2, paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
+  # saveRDS_auto_create_dir(mat2, paste0(rdir.atac, 'binary/',sub('.csv','_metacell.rds',f)))
 }
 
 ## ===============
@@ -113,39 +113,59 @@ gtf <- data.table::fread('/home/whou10/scratch16/whou10/resource/gtf/grcm38.gtf'
 gtf <- gtf[gtf[,3]=='gene',]
 gene <- GRanges(seqnames=gtf[,1],IRanges(start=gtf[,4],end=gtf[,5]),strand=gtf[,7])
 names(gene) <- sub('".*','',sub('.*gene_name "','',gtf[,9]))
-pro <- promoters(gene,upstream=500,downstream=500)
+pro <- promoters(gene,upstream=100000,downstream=100000)
+## use region +/100kb, at least cover gene body
+g.s = start(gene)
+g.e = end(gene)
+p.s = start(pro)
+p.e = end(pro)
+v1 <- sapply(1:length(g.s), function(i) ifelse(g.s[i] < p.s[i], g.s[i], p.s[i]))
+v2 <- sapply(1:length(g.e), function(i) ifelse(g.e[i] > p.e[i], g.e[i], p.e[i]))
+tssspan <- GRanges(seqnames=gtf[,1],IRanges(start=v1,end=v2),strand=gtf[,7])
+
+
 peaks <- GRanges(seqnames=sapply(rownames(atac), function(i) sub(':.*','',i)),
                  IRanges(start=as.numeric(sapply(rownames(atac), function(i) sub('_.*','',sub('.*:','',i)))),
                          end=as.numeric(sapply(rownames(atac), function(i) sub('.*_','',sub('.*:','',i))))),
                  strand='*')
 
-o <- as.matrix(findOverlaps(pro, peaks))
+o <- as.matrix(findOverlaps(tssspan, peaks))
 str(o)
 peakgenepair <- list()
 for (i in o[,1]){
   peakgenepair[[names(gene)[i]]] <- rownames(atac)[o[o[,1]==i,2,drop=FALSE]]
 }
 length(peakgenepair)
-saveRDS(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/mouse_grcm38.rds')
+saveRDS_auto_create_dir(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/mouse_grcm38.rds')
 
 ### human
 gtf <- data.table::fread('/home/whou10/scratch16/whou10/resource/gtf/grch38.gtf',data.table=F)
 gtf <- gtf[gtf[,3]=='gene',]
 gene <- GRanges(seqnames=gtf[,1],IRanges(start=gtf[,4],end=gtf[,5]),strand=gtf[,7])
 names(gene) <- sub('".*','',sub('.*gene_name "','',gtf[,9]))
-pro <- promoters(gene,upstream=500,downstream=500)
+pro <- promoters(gene,upstream=100000,downstream=100000)
+## use region +/100kb, at least cover gene body
+g.s = start(gene)
+g.e = end(gene)
+p.s = start(pro)
+p.e = end(pro)
+v1 <- sapply(1:length(g.s), function(i) ifelse(g.s[i] < p.s[i], g.s[i], p.s[i]))
+v2 <- sapply(1:length(g.e), function(i) ifelse(g.e[i] > p.e[i], g.e[i], p.e[i]))
+tssspan <- GRanges(seqnames=gtf[,1],IRanges(start=v1,end=v2),strand=gtf[,7])
+
+
 peaks <- GRanges(seqnames=sapply(rownames(atac), function(i) sub(':.*','',i)),
                  IRanges(start=as.numeric(sapply(rownames(atac), function(i) sub('_.*','',sub('.*:','',i)))),
                          end=as.numeric(sapply(rownames(atac), function(i) sub('.*_','',sub('.*:','',i))))),
                  strand='*')
 
-o <- as.matrix(findOverlaps(pro, peaks))
+o <- as.matrix(findOverlaps(tssspan, peaks))
 peakgenepair <- list()
 for (i in o[,1]){
   peakgenepair[[names(gene)[i]]] <- rownames(atac)[o[o[,1]==i,2,drop=FALSE]]
 }
 length(peakgenepair)
-saveRDS(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/human_grch38.rds')
+saveRDS_auto_create_dir(peakgenepair, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/peakgenepair/human_grch38.rds')
 
 
 ## ==============================================
@@ -178,7 +198,7 @@ for (f in af1){
       }
     }
   }
-  saveRDS(corlist, paste0(rdir, sub('.csv', '_metacell.rds', f)))    
+  saveRDS_auto_create_dir(corlist, paste0(rdir, sub('.csv', '_metacell.rds', f)))    
 }
 str(corlist;1:3)  
 
@@ -216,7 +236,7 @@ for (f in af1){
       }
     }  
   }
-  saveRDS(corlist, paste0(rdir, sub('.csv', '.rds', f)))
+  saveRDS_auto_create_dir(corlist, paste0(rdir, sub('.csv', '.rds', f)))
 }
 
 
@@ -228,7 +248,7 @@ tb.encsr$tissue = tissue
 ct <- gsub('.csv', '', sub('.*:','', names(metalist)))
 table(tissue)
 table(ct)
-saveRDS(tb.encsr, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/encsr_metadata/table_encsr.rds')
+saveRDS_auto_create_dir(tb.encsr, '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/encsr_metadata/table_encsr.rds')
 
 
 ## =========
@@ -256,14 +276,14 @@ pd <- lapply(1:length(metalist), function(i){
   tmp <- table(metalist[[i]])
   
   tmpdf <- data.frame(species = species[i], 
-             tissue = tb.encsr[which(tb.encsr[,1] %in% sub(':.*','',names(metalist)[i]) ), 5],
-             celltype = ct[i],
-             numCell = as.vector(tmp),
-             stringsAsFactors = FALSE)
+                      tissue = tb.encsr[which(tb.encsr[,1] %in% sub(':.*','',names(metalist)[i]) ), 5],
+                      celltype = ct[i],
+                      numCell = as.vector(tmp),
+                      stringsAsFactors = FALSE)
 })
 pd <- do.call(rbind, pd)
 str(pd)
-saveRDS(pd, paste0(pdir, 'plotdata.rds'))
+saveRDS_auto_create_dir(pd, paste0(pdir, 'plotdata.rds'))
 
 
 library(RColorBrewer)
@@ -306,7 +326,7 @@ ggplot(data = pd) +
   scale_color_manual(values = my_palette) +
   ylab('Number of cells in metacells (log10)') +
   xlab('Celltype')
-  dev.off()
+dev.off()
 
 ## plot gene-peak correlation in single-cell as boxplot, in metacells as boxplot
 pdir <- '/home/whou10/scratch4/whou10/encode4/SEACells/metacell/compare_genepeakcorrelation_metacell_sc/'
@@ -344,7 +364,7 @@ cor.meta <- do.call(rbind, cor.meta)
 str(cor.meta)
 
 pd.cor <- rbind(cor.sc, cor.meta)
-saveRDS(pd.cor, paste0(pdir, 'peakgenepair_correlation_metacell_sc_plotdata.rds'))
+saveRDS_auto_create_dir(pd.cor, paste0(pdir, 'peakgenepair_correlation_metacell_sc_plotdata.rds'))
 
 
 # Create the side-by-side boxplot
@@ -402,5 +422,7 @@ if (sub(":.*", '', g) %in% names(peakgenepair)) {
       as.vector(corfunc(atac.tmp, t(rna[g, , drop = F])))
   }
 }
+
+str(corlist)
 
 
