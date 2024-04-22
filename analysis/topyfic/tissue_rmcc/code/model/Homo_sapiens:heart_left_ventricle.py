@@ -1,0 +1,77 @@
+import Topyfic
+import pandas as pd
+import scanpy as sc
+import numpy as np
+import scipy as sp
+import random
+import os
+
+os.mkdir('/home/whou10/scratch4/whou10/encode4/topyfic/tissue_rmcc/res/Homo_sapiens:heart_left_ventricle')
+os.chdir('/home/whou10/scratch4/whou10/encode4/topyfic/tissue_rmcc/res/Homo_sapiens:heart_left_ventricle')
+
+ENCSR994VEG=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR994VEG.p")
+ENCSR067BOK=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR067BOK.p")
+ENCSR176WWW=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR176WWW.p")
+ENCSR398YBK=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR398YBK.p")
+ENCSR980OCK=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR980OCK.p")
+ENCSR405YKM=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR405YKM.p")
+ENCSR481QQR=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR481QQR.p")
+ENCSR755CIF=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR755CIF.p")
+ENCSR727OYO=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR727OYO.p")
+ENCSR906MRL=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR906MRL.p")
+ENCSR084XKX=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR084XKX.p")
+ENCSR345CVL=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR345CVL.p")
+ENCSR349AHE=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR349AHE.p")
+ENCSR962JKS=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR962JKS.p")
+ENCSR681GPY=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR681GPY.p")
+ENCSR273JWD=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR273JWD.p")
+ENCSR630LZS=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR630LZS.p")
+ENCSR654MFX=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR654MFX.p")
+ENCSR157FDD=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR157FDD.p")
+ENCSR814LMX=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR814LMX.p")
+ENCSR231FNL=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR231FNL.p")
+ENCSR540DHJ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR540DHJ.p")
+ENCSR488UUT=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR488UUT.p")
+ENCSR008CVR=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR008CVR.p")
+ENCSR056QLB=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR056QLB.p")
+ENCSR489URW=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR489URW.p")
+ENCSR204RHR=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR204RHR.p")
+ENCSR328GTN=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR328GTN.p")
+ENCSR788SNY=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR788SNY.p")
+ENCSR991LHO=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR991LHO.p")
+ENCSR899GYX=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR899GYX.p")
+ENCSR203YOV=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR203YOV.p")
+ENCSR012APQ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR012APQ.p")
+ENCSR259VOY=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR259VOY.p")
+ENCSR455MGH=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR455MGH.p")
+ENCSR076ZLE=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR076ZLE.p")
+ENCSR763BII=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR763BII.p")
+ENCSR190TRK=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR190TRK.p")
+ENCSR002SMQ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR002SMQ.p")
+ENCSR485GOL=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR485GOL.p")
+ENCSR762LML=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR762LML.p")
+ENCSR801DHT=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR801DHT.p")
+ENCSR439ZVQ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR439ZVQ.p")
+ENCSR352DXB=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR352DXB.p")
+ENCSR751BHQ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR751BHQ.p")
+ENCSR919ENI=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR919ENI.p")
+ENCSR138JCM=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR138JCM.p")
+ENCSR175TRJ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR175TRJ.p")
+ENCSR753YOZ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR753YOZ.p")
+ENCSR237HWJ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR237HWJ.p")
+ENCSR093GXF=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR093GXF.p")
+ENCSR777RUZ=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR777RUZ.p")
+ENCSR851JBE=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR851JBE.p")
+ENCSR085XEW=Topyfic.read_train("/home/whou10/scratch4/whou10/encode4/topyfic/train_rmcc/ENCSR085XEW.p")
+
+data = sc.read('/home/whou10/scratch4/whou10/encode4/data/scrna/anndata/h5ad_tissue_rmcc_norm/Homo_sapiens:heart_left_ventricle.h5ad')
+data.X = np.round_(data.X)
+    
+top_model, clustering, adata = Topyfic.calculate_leiden_clustering(trains=[ENCSR994VEG,ENCSR067BOK,ENCSR176WWW,ENCSR398YBK,ENCSR980OCK,ENCSR405YKM,ENCSR481QQR,ENCSR755CIF,ENCSR727OYO,ENCSR906MRL,ENCSR084XKX,ENCSR345CVL,ENCSR349AHE,ENCSR962JKS,ENCSR681GPY,ENCSR273JWD,ENCSR630LZS,ENCSR654MFX,ENCSR157FDD,ENCSR814LMX,ENCSR231FNL,ENCSR540DHJ,ENCSR488UUT,ENCSR008CVR,ENCSR056QLB,ENCSR489URW,ENCSR204RHR,ENCSR328GTN,ENCSR788SNY,ENCSR991LHO,ENCSR899GYX,ENCSR203YOV,ENCSR012APQ,ENCSR259VOY,ENCSR455MGH,ENCSR076ZLE,ENCSR763BII,ENCSR190TRK,ENCSR002SMQ,ENCSR485GOL,ENCSR762LML,ENCSR801DHT,ENCSR439ZVQ,ENCSR352DXB,ENCSR751BHQ,ENCSR919ENI,ENCSR138JCM,ENCSR175TRJ,ENCSR753YOZ,ENCSR237HWJ,ENCSR093GXF,ENCSR777RUZ,ENCSR851JBE,ENCSR085XEW], data=data)
+
+top_model.save_topModel()
+analysis_top_model = Topyfic.Analysis(Top_model=top_model)
+
+analysis_top_model.calculate_cell_participation(data=data)
+analysis_top_model.save_analysis()
+
