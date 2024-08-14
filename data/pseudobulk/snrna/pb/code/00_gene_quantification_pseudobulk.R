@@ -6,7 +6,7 @@ gene_quantification_pseudobulk <-
     pb <- sapply(dataset, function(f) {
       print(f)
       m <- readRDS(paste0(dataset_path, f))
-      tmp = rowSums(m[, colnames(m) %in% bc, drop = F])
+      tmp = rowSums(m[, colnames(m) %in% barcode, drop = F])
     }, simplify = T)
     
     if (ncol(pb) > 1) {
@@ -28,7 +28,7 @@ gene_quantification_pseudobulk <-
       CPM = cpm,
       stringsAsFactors = FALSE
     )
-    colnames(df) = paste0('#', colnames(df))
+    # colnames(df) = paste0('#', colnames(df))
     write.table(
       df,
       file = savefilename,
@@ -38,4 +38,5 @@ gene_quantification_pseudobulk <-
     )
     return('File saved.')
   }
+
 
