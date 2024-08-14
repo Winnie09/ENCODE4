@@ -1,6 +1,8 @@
 rm(list=ls())
 library(Matrix)
-d = readRDS('/home/whou10/scratch4/whou10/encode4/data/celltype/proc/final.rds')
+# d = readRDS('/home/whou10/scratch4/whou10/encode4/data/celltype/proc/final.rds')
+d = readRDS('/home/whou10/scratch4/whou10/encode4/data/celltype/proc/step3.rds') ## 	1520779 obs. of  18 variables:
+
 d <- d[!is.na(d$rna_dataset), ]
 d$lifestage <-
   ifelse(d$lifestage %in% c('adult', 'child'),
@@ -11,8 +13,9 @@ l = readRDS('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/merge
 d2 = cbind(d, level1 = l[,2], level2 = l[,3], level3 = l[,4])
 
 
-level = 'level1' ##########
-rdir <- paste0('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/', level, '/')
+level = paste0('level', commandArgs(trailingOnly = T)[1])
+print(level)
+rdir <- paste0('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/rds/', level, '/')
 rdir2 <- '/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/merge/'
 
 af = list.files(rdir)
@@ -72,7 +75,7 @@ pb = readRDS(paste0(rdir2, level, '_', sub(' ', '_', uspe), '_log2CPM.rds'))
 print(str(pb))
 
 pdir = paste0('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/plot/', level, '/', sub(' ', '_',uspe),'/')
-dir.create(pdir)
+dir.create(pdir, recursive = TRUE)
 pr <-
   PCA(
     genebycellmat = pb,
@@ -111,7 +114,7 @@ colnames(pr) <- c(paste0('Principal component 1(', round(pcvar[1]*100,2), '%)'),
 str(pr)  
 
 if (level == 'level1'){
-  rdir <- paste0('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/', level, '/')
+  # rdir <- paste0('/home/whou10/scratch4/whou10/encode4/data/pseudobulk/snrna/pb/rds/', level, '/')
   af = list.files(rdir)
   enc = sub('-.*','',sub('.*ENC', 'ENC', af))
   spe = d2[match(enc,d2$rna_dataset), 'species']
@@ -173,6 +176,7 @@ for (colid in 3:ncol(u)) {
   )
   dev.off()
 }
+
 
 
 
